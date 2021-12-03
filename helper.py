@@ -5,6 +5,7 @@ from numpy.lib.shape_base import column_stack
 from pandas.core.reshape.pivot import pivot
 import streamlit as st
 import pandas as pd
+import plotly
 from datetime import datetime as dt
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
