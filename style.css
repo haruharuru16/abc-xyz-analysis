@@ -1,0 +1,7 @@
+body {
+    background-color: white;
+}
+
+div[data-testid = 'stHorizontalBlock'] > div:first-of-type {
+    background-color: white;
+}
