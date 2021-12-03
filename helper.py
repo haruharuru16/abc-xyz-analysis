@@ -6,7 +6,6 @@ from pandas.core.reshape.pivot import pivot
 import streamlit as st
 import pandas as pd
 from datetime import datetime as dt
-from matplotlib import rcParams
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from streamlit.util import index_
