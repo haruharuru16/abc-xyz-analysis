@@ -9,6 +9,7 @@ import numpy as np
 from datetime import datetime as dt
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+import plotly.express as px
 from streamlit.util import index_
 
 
@@ -151,80 +152,76 @@ def abc_xyz_class(data1, data2):
     merged = data1.merge(data2, how='left', on='Product_Code')
     merged = merged[['Product_Code', 'Order_Demand', 'abc_class', 'xyz_class']]
 
+    merged = merged.reset_index()
+    merged['No'] = merged.index + 1
+    merged.drop(columns='index', inplace=True)
+    merged.set_index('No', inplace=True)
+
     return merged
 
 
 def summary_poster(chart_df):  # summary poster
     # Make Subplots
     fig = make_subplots(
-        rows=2, cols=2,
-        column_widths=[2, 3],
-        specs=[[{'type': 'pie'}, {'type': 'bar'}],
-               [{'type': 'pie'}, {'type': 'bar'}]],
-        subplot_titles=('ABC Class by Percentage',
-                        'ABC Class by Volume',
+        rows=2, cols=3,
+        column_widths=[3, 2, 2],
+        specs=[[{'type': 'bar'}, {'type': 'pie'}, {'type': 'pie'}],
+               [{'type': 'bar'}, {'type': 'pie'}, {'type': 'table'}]],
+        subplot_titles=('ABC Class by Volume Bar Chart',
+                        'ABC Class by Percentage',
                         'ABC Class by Volume Percentage',
-                        'Top 15 A Class Products'),
-        vertical_spacing=0.1, horizontal_spacing=0.2)
+                        'Top 15 A Class Products Bar Chart',
+                        'Top 15 A Class Products',
+                        'Top 15 A Class Products Volume by Percentage'),
+        vertical_spacing=0.1, horizontal_spacing=0.05)
+
+    color_map = ['darkblue', 'royalblue', 'cyan']
 
     # PIE
-    # data for pie 1
+    # data for pie ABC Class by Percentage
     pie_data = chart_df.groupby(
         'class')['Product_Code'].nunique().reset_index()
     pie_data = pie_data.rename(
         columns={'class': 'label', 'Product_Code': 'class_counts'})
 
-    # data for pie 2
-    pie_demand = chart_df.groupby('class')['Order_Demand'].sum().reset_index()
-    pie_demand = pie_demand.rename(
-        columns={'class': 'label', 'Order_Demand': 'order_volume'})
-
-    # Bar chart
-    bar_plot = pie_demand.copy()
-    x = bar_plot.label
-    y = bar_plot.order_volume
-
-    # Bar chart 4
-    top_A = chart_df[chart_df['class'] == 'A']
-    top_A = top_A.groupby('Product_Code')['Order_Demand'].sum(
-    ).sort_values(ascending=False).reset_index()
-    top_15 = top_A[:15]
-    x_top = top_15.Product_Code
-    y_top = top_15.Order_Demand
-
-    color_map = ['darkblue', 'royalblue', 'cyan']
-
-    # pie 1
     fig.add_trace(go.Pie(labels=pie_data.label,
                          values=pie_data.class_counts,
                          hole=0.4,
                          legendgroup='grp1',
                          showlegend=False),
-                  row=1, col=1)
+                  row=1, col=2)
 
     fig.update_traces(hoverinfo='label+percent',
                       marker=dict(colors=color_map,
                                   line=dict(color='white', width=1)),
-                      row=1, col=1)
+                      row=1, col=2)
 
+    # data for pie ABC Class by Volume Percentage
+    pie_demand = chart_df.groupby('class')['Order_Demand'].sum().reset_index()
+    pie_demand = pie_demand.rename(
+        columns={'class': 'label', 'Order_Demand': 'order_volume'})
     # pie 2
     fig.add_trace(go.Pie(labels=pie_demand.label,
                          values=pie_demand.order_volume,
                          hole=0.4,
                          legendgroup='grp1',
                          showlegend=False),
-                  row=2, col=1)
+                  row=1, col=3)
 
     fig.update_traces(hoverinfo='label+percent+value',
                       marker=dict(colors=color_map,
                                   line=dict(color='white', width=1)),
-                      row=2, col=1)
+                      row=1, col=3)
 
+    # Bar chart for ABC Classes by Volume
+    bar_plot = pie_demand.copy()
+    x = bar_plot.label
+    y = bar_plot.order_volume
     # bar chart 1
     fig.add_trace(go.Bar(x=x, y=y,
                          legendgroup='grp2',
                          showlegend=False),
-                  row=1, col=2)
+                  row=1, col=1)
 
     fig.update_traces(hoverinfo='x+y',
                       text=y,
@@ -232,27 +229,72 @@ def summary_poster(chart_df):  # summary poster
                       textposition='inside',
                       marker=dict(color=color_map,
                                   line=dict(color='white', width=1)),
-                      row=1, col=2)
+                      row=1, col=1)
 
-    fig.update_yaxes(title_text="Product Demand Volume", row=1, col=2)
+    fig.update_yaxes(title_text="Product Demand Volume", row=1, col=1)
 
+    # Bar chart 4 Top 15 A Class Products
+    top_A = chart_df[chart_df['class'] == 'A']
+    top_A = top_A.groupby('Product_Code')['Order_Demand'].sum(
+    ).sort_values(ascending=False).reset_index()
+    top_15 = top_A[:15]
+    x_top = top_15.Product_Code
+    y_top = top_15.Order_Demand
     # bar chart 2
     fig.add_trace(go.Bar(x=x_top, y=y_top,
                          legendgroup='grp2',
                          showlegend=False),
-                  row=2, col=2)
+                  row=2, col=1)
 
     fig.update_traces(hoverinfo='x+y',
                       marker=dict(color="mediumslateblue",
                                   line=dict(color='white', width=1)),
-                      row=2, col=2)
+                      row=2, col=1)
 
-    fig.update_yaxes(title_text="Product Demand Volume", row=2, col=2)
+    fig.update_yaxes(title_text="Product Demand Volume", row=2, col=1)
 
-    fig.update_xaxes(tickangle=-45, row=2, col=2)
+    fig.update_xaxes(tickangle=-45, row=2, col=1)
 
-    fig.update_layout(width=800, height=600,
-                      margin=dict(l=5, t=20, b=0))
+    # Pie Chart Top 15 A Class Products
+    aggregate = chart_df.groupby(['Product_Code', 'class'])[
+        'Order_Demand'].sum().reset_index()
+    # plus_demand = chart_df.merge(aggregate, how='left', on='Product_Code')
+    # plus_demand = plus_demand.loc[:, ['Product_Code', 'Order_Demand', 'class']]
+    data_a = aggregate.loc[aggregate['class'].apply(
+        lambda x: x == 'A')].sort_values('Order_Demand', ascending=False)
+    data_a_15 = data_a[:15]
+    list_15 = data_a_15['Product_Code'].unique()
+    data_others = aggregate.loc[~(
+        aggregate['Product_Code'].apply(lambda x: x in list_15))]
+    total_demand = sum(data_others['Order_Demand'])
+    others = {'Product_Code': 'Others',
+              'Order_Demand': total_demand, 'class': 'Others'}
+    data_a_15 = data_a_15.append(others, ignore_index=True)
+    data_a_15 = data_a_15.rename(
+        columns={'class': 'label', 'Order_Demand': 'order_volume'})
+
+    # pie 3
+    fig.add_trace(go.Pie(labels=data_a_15.Product_Code,
+                         values=data_a_15.order_volume,
+                         hole=0.4,
+                         legendgroup='grp1',
+                         showlegend=False),
+                  row=2, col=3)
+
+    fig.update_traces(hoverinfo='label+percent+value',
+                      marker=dict(colors=px.colors.sequential.Inferno,
+                                  line=dict(color='white', width=1)),
+                      row=2, col=3)
+
+    # ABC Classification Table
+    fig.add_trace(go.Table(header=dict(values=['Product Code', 'Order Demand', 'Class'],
+                                       align='left'),
+                           cells=dict(values=[data_a_15.Product_Code, data_a_15.order_volume, data_a_15.label],
+                                      align='left')),
+                  row=2, col=2)
+
+    fig.update_layout(width=1200, height=600,
+                      margin=dict(l=0, r=10, t=20, b=0))
 
     return fig
 

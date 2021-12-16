@@ -7,7 +7,7 @@ st.set_page_config(layout='wide')
 st.title('ABC-XYZ Classification Dashboard')
 
 # load dataset
-dataset = load_data('Product Demand 3 Months - Copy.csv')
+dataset = load_data('Product Demand 6 Months.csv')
 
 # load css
 load_css('style.css')
@@ -21,7 +21,7 @@ with b_input:
 
 with duration_input:
     month_duration = st.selectbox(
-        'Classification Period', ('First 2 Months', 'Last 2 Months', '3 Months'))
+        'Classification Period', ('Last 3 Months', '6 Months'))
     filtered_data = filter_dataset(dataset, month_duration)
 
 
