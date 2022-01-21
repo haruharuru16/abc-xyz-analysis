@@ -1,22 +1,8 @@
-from threading import Condition
-from numpy.core.fromnumeric import product
-from numpy.lib.arraypad import pad
-from numpy.lib.shape_base import column_stack
-from pandas.core.reshape.pivot import pivot
 import streamlit as st
 import pandas as pd
-import numpy as np
-from datetime import datetime as dt
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import plotly.express as px
-from streamlit.util import index_
-
-
-def load_css(filename):
-    with open(filename) as f:
-        st.markdown('<style>{}</style>'.format(f.read()),
-                    unsafe_allow_html=True)
 
 
 def load_data(filename):  # load data function
@@ -59,12 +45,14 @@ def abc_classification(data, a_input, b_input):  # ABC Classification Function
             return 'C'
 
     # Calculate reorder data
-    reorder_data = data['Product_Code'].value_counts().reset_index()
-    reorder_data = reorder_data.rename(
-        {'index': 'Product_Code', 'Product_Code': 'order_frequency'}, axis=1)
+    reorder_data = data.copy()
+    reorder_data = reorder_data.groupby(
+        'Product_Code')['Order_Demand'].sum().reset_index()
 
-    # Calculating product rank based on product reorder freq
-    product_calc = reorder_data.copy()
+    # # Calculating product rank based on product reorder freq
+    product_calc = reorder_data.sort_values(
+        'Order_Demand', ascending=False).reset_index()
+    product_calc.drop(columns='index', inplace=True)
     product_calc['rank'] = product_calc.index + 1
 
     # Calculating Total Product
@@ -88,52 +76,6 @@ def merge_data(data1, data2):  # merge data function
     merged = data2.merge(classified, how='left', on='Product_Code')
 
     return merged
-
-
-def xyz(cov):  # defining xyz classes
-    if cov <= 0.5:
-        return 'X'
-    elif cov > 0.5 and cov <= 1.0:
-        return 'Y'
-    else:
-        return 'Z'
-
-
-def xyz_classification(data_period):  # XYZ Classification Function
-    # add month column
-    data_period['month'] = data_period.Date.apply(lambda x: x.strftime('%B'))
-
-    # groupby month
-    data_group = data_period.groupby(['Product_Code', 'month'])[
-        'Order_Demand'].sum().reset_index()
-
-    # pivot the data
-    pivot_data = data_group.pivot(
-        index='Product_Code', columns='month', values='Order_Demand').fillna(0)
-
-    months = pivot_data.columns
-
-    # calculating demand standard deviation, total demand, average demand, and covariance demand
-    data_calc = pivot_data.copy()
-    data_calc['std'] = data_calc[months].std(axis=1)
-    data_calc['total'] = data_calc[months].sum(axis=1)
-    data_calc['avg'] = data_calc[months].mean(axis=1)
-    data_calc['cov'] = data_calc['std'] / data_calc['avg']
-    data_calc.sort_values(by='cov', ascending=True, inplace=True)
-
-    # defining xyz classes
-    data_xyz = data_calc.copy()
-    data_xyz['xyz_class'] = data_xyz['cov'].apply(xyz)
-
-    xyz_monthly = data_xyz.drop(
-        columns={'std', 'avg', 'cov'}).groupby('xyz_class').agg('sum')
-
-    xyz_classified = data_xyz.copy().reset_index().rename(
-        columns={'xyz_class': 'class'})
-    # xyz_classified = xyz_classified.loc[:, ['Product_Code', 'xyz_class']
-    xyz_merge = merge_data(xyz_classified, data_period)
-
-    return data_xyz, xyz_monthly, xyz_merge
 
 
 def abc_xyz_class(data1, data2):
