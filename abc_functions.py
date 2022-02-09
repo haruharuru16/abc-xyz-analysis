@@ -114,8 +114,8 @@ def summary_poster(chart_df):  # summary poster
                         'ABC Class by Volume Percentage',
                         'Top 15 A Class Products Bar Chart',
                         'Top 15 A Class Products',
-                        'Top 15 A Class Products Volume by Percentage'),
-        vertical_spacing=0.1, horizontal_spacing=0.05)
+                        'Top 15 A Class Products by Percentage'),
+        vertical_spacing=0.1, horizontal_spacing=0.025)
 
     color_map = ['darkblue', 'royalblue', 'cyan']
 

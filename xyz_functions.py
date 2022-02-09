@@ -110,7 +110,7 @@ def xyz_poster(chart_df, bar_df, period):
                         'XYZ Class by Volume Percentage',
                         'Top 15 X Class Products Bar Chart',
                         'Top 15 X Class Products',
-                        'Top 15 X Class Products Volume by Percentage'),
+                        'Top 15 X Class Products by Percentage'),
         vertical_spacing=0.1, horizontal_spacing=0.025)
 
     # data
