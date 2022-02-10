@@ -1,7 +1,7 @@
 from datetime import datetime
 import streamlit as st
 from abc_functions import abc_classification, abc_xyz_class, filter_dataset, load_data, summary_poster
-from file_uploader import file_uploader
+from file_uploader import df_downloader, file_uploader
 from xyz_functions import xyz_classifier, xyz_poster
 from recommendation_function import get_xyz_recommendation
 from fpdf import FPDF
@@ -9,21 +9,27 @@ from fpdf import FPDF
 st.set_page_config(layout='wide')
 st.title('ABC-XYZ Classification Dashboard')
 
-
-# load dataset
-# dataset = load_data('Product Demand 6 Months.csv')
-
 #========== Load Dataset ==========#
 st.markdown("**Input Data**")
 
-filetype, filename = st.columns([1, 1])
+template, filetype, filename = st.columns([1, 2, 3])
+with template:
+    template = load_data('assets/template_data.csv')
+    csv = df_downloader(template)
+
+    st.write('Download Template')
+    st.download_button(
+        label='Download file template',
+        data=csv,
+        file_name='ABCXYZ template.csv',
+    )
+
 with filetype:
-    file_type = st.selectbox('Choose a file type', ('EXCEL', 'CSV'))
+    file_type = st.selectbox('Choose a file type', ('CSV', 'EXCEL'))
 
 with filename:
     file_upload = st.file_uploader('Choose a file')
     dataset = file_uploader(file_upload, file_type)
-
 
 #========== End of the load data part ==========#
 
@@ -134,7 +140,7 @@ with col2:
 
 st.markdown('---')
 
-#========== Download PDF Report ==========#
+#========== Download Reports ==========#
 st.markdown('**Download Report**')
 
 # save image
@@ -179,8 +185,31 @@ pdf.cell(w=75.0, h=5.0, align='L', txt='XYZ Analysis Classification Report')
 pdf.ln(10)
 pdf.image('images/bar1.png', w=190, h=100)
 
-st.download_button(
-    'Download Report',
-    data=pdf.output(dest='S').encode('latin-1'),
-    file_name='ABCXYZ Analysis Report.pdf',
-)
+# Download Visualization (as PDF file), ABC XYZ Analysis (as CSV file), and recommendation (as CSV file)
+visualization, abcxyz_report, rec_report = st.columns([1, 1, 1])
+
+with visualization:
+    st.write('Download Visualization Report')
+    st.download_button(
+        'Download Visualization Report',
+        data=pdf.output(dest='S').encode('latin-1'),
+        file_name='ABCXYZ Analysis Report.pdf',
+    )
+
+with abcxyz_report:
+    st.write('Download ABC-XYZ Classification Report')
+    st.download_button(
+        'Download ABC-XYZ Report',
+        data=df_downloader(abc_xyz_data),
+        file_name='ABC-XYZ Analysis Classification Report.csv'
+    )
+
+with rec_report:
+    st.write('Download Reevaluation Recommendation Report')
+    st.download_button(
+        'Download ABC-XYZ Reevaluation Report',
+        data=df_downloader(data_rec),
+        file_name='ABC-XYZ Reevaluation Recommendation Report.csv'
+    )
+
+#========== End of the fifth part ==========#
