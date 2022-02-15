@@ -1,3 +1,5 @@
+import plotly.express as px
+import plotly.graph_objects as go
 from datetime import datetime
 import streamlit as st
 from abc_functions import abc_classification, abc_xyz_class, filter_dataset, load_data, summary_poster
@@ -48,7 +50,7 @@ with b_input:
 
 with duration_input:
     month_duration = st.selectbox(
-        'ABC Classification Period', ('6 Months', 'Last 3 Months'))
+        'ABC Classification Period', ('6 Months', '5 Months', '4 Months', '3 Months', '2 Months', '1 Month'))
     filtered_data = filter_dataset(dataset, month_duration)
 
 
@@ -71,7 +73,7 @@ xyz_period, x_input, y_input = st.columns([1, 1, 1])
 
 with xyz_period:
     xyz_month_period = st.selectbox(
-        'XYZ Classification Period', ('6 Months', 'Last 3 Months'))
+        'XYZ Classification Period', ('6 Months', '5 Months', '4 Months', '3 Months', '2 Months', '1 Month'))
     xyz_filtered_data = filter_dataset(dataset, xyz_month_period)
 
 with x_input:

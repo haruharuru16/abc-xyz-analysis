@@ -18,14 +18,38 @@ def filter_dataset(data, period):  # filter dataset for XYZ Classification Funct
 
     # get the last 3 months data
     months = data_copy.month.unique()
+
+    last_6_months = months[-6:]
+    last_5_months = months[-5:]
+    last_4_months = months[-4:]
     last_3_months = months[-3:]
+    last_2_months = months[-2:]
+    last_1_month = months[-1:]
 
     # filtering the data based on period choice
-    if period == 'Last 3 Months':
+    if period == '5 Months':
+        data_period = data_copy.loc[data_copy['month'].apply(
+            lambda x: x in last_5_months)]
+
+    elif period == '4 Months':
+        data_period = data_copy.loc[data_copy['month'].apply(
+            lambda x: x in last_4_months)]
+
+    elif period == '3 Months':
         data_period = data_copy.loc[data_copy['month'].apply(
             lambda x: x in last_3_months)]
+
+    elif period == '2 Months':
+        data_period = data_copy.loc[data_copy['month'].apply(
+            lambda x: x in last_2_months)]
+
+    elif period == '1 Month':
+        data_period = data_copy.loc[data_copy['month'].apply(
+            lambda x: x in last_1_month)]
+
     else:
-        data_period = data_copy
+        data_period = data_copy.loc[data_copy['month'].apply(
+            lambda x: x in last_6_months)]
 
     data_period.drop(columns='month', inplace=True)
 
